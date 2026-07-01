@@ -571,9 +571,127 @@ textarea.form-input {
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* Responsive details */
+/* Responsive details for Mobile, Tablet, and Desktop */
+
+/* 1. Tablet & Mobile Preview Page Scaling (Screens < 840px) */
+@media (max-width: 840px) {
+  .screen-page {
+    width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 8mm !important;
+    font-size: 8.5pt !important;
+    box-shadow: none !important;
+    border: 1px solid var(--border);
+  }
+  
+  .invoice-preview-container {
+    padding: 1rem 0.5rem !important;
+  }
+
+  .company-logo {
+    height: 55px !important; /* Scale logo down slightly */
+  }
+
+  .invoice-title {
+    font-size: 14pt !important;
+  }
+}
+
+/* 2. Tablet Layout Tweaks (Screens < 768px) */
 @media (max-width: 768px) {
+  .main-content {
+    padding: 1.25rem;
+  }
+
+  .focused-form-panel {
+    padding: 1.25rem;
+    gap: 1.5rem;
+  }
+
   .form-grid, .form-grid-3 {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .modal-header {
+    padding: 1rem 1.5rem;
+  }
+}
+
+/* 3. Mobile Layout Tweaks (Screens < 600px) */
+@media (max-width: 600px) {
+  .app-header {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem 1rem;
+    text-align: center;
+  }
+
+  .logo-section {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .header-actions .btn {
+    flex-grow: 1;
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  /* Form Editor Headers stack */
+  .form-header-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .form-header-bar div + div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .focused-form-panel .btn {
+    width: 100%;
+  }
+
+  /* History Dashboard headers stack */
+  .dashboard-grid > div:first-child {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .filters-panel {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .stat-card {
+    padding: 1.25rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .modal-content {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
   }
 }

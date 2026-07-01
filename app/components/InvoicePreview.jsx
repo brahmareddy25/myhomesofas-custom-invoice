@@ -15,11 +15,12 @@ export default function InvoicePreview({ invoice, isPrintMode = false }) {
   };
 
   const payment = invoice.payment || {
-    accountName: "MYSOFAS CUSTOMIZED & IDEALIZED",
-    accountNumber: "50200116905245",
-    bank: "HDFC",
+    accountName: "MY HOME SOFAS CUSTOMIZED & IDEALIZED",
+    accountNumber: "5020 0116 9052 45",
+    accountType: "Current Account",
+    bank: "HDFC Bank",
     ifsc: "HDFC0001021",
-    branch: "JP Nagar, Miyapur",
+    branch: "MIYAPUR",
     upiId: "MYHOMESOFASCUSTOMIZE.42990891@HDFCBANK"
   };
 
@@ -198,6 +199,9 @@ export default function InvoicePreview({ invoice, isPrintMode = false }) {
             <div className="payment-title">Payment Instructions</div>
             <p className="payment-line"><span className="payment-label">Account Name:</span> <span className="payment-val">{payment.accountName}</span></p>
             <p className="payment-line"><span className="payment-label">Account No:</span> <span className="payment-val">{payment.accountNumber}</span></p>
+            {payment.accountType && (
+              <p className="payment-line"><span className="payment-label">Account Type:</span> <span className="payment-val">{payment.accountType}</span></p>
+            )}
             <p className="payment-line"><span className="payment-label">Bank Name:</span> <span className="payment-val">{payment.bank}</span></p>
             <p className="payment-line"><span className="payment-label">IFSC Code:</span> <span className="payment-val">{payment.ifsc}</span></p>
             <p className="payment-line"><span className="payment-label">Branch:</span> <span className="payment-val">{payment.branch}</span></p>

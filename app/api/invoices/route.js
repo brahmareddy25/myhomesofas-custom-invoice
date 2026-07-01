@@ -25,22 +25,6 @@ const streamToString = (stream) =>
     stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
   });
 
-const SAMPLE_INVOICE = {
-  id: "seed-invoice-1",
-  invoiceNo: "INV-2",
-  invoiceDate: "01.07.2026",
-  customerName: "RAMBABU GARU",
-  customerLocation: "Kokapet",
-  hasGst: false,
-  gstDetails: { cgst: 9, sgst: 9, igst: 0 },
-  hasTransporter: false,
-  vehicleNo: "",
-  items: [
-    { name: "Bed Queen Size", description: "With Cenflex foams\nMittals fabric", quantity: 1, unit: "Set", price: 45000 },
-    { name: "3 Seater Sofa", description: "Sofa made with Cenflex foams\nMittals fabric\nPine wood\nQuality plywood\nMittals fabric warranty: 3 years\nFoams warranty: 6 years", quantity: 1, unit: "Nos", price: 60000 },
-    { name: "Mattress with Latex (51.5 × 72)", description: "Size: 51.5 × 72\n4-inch Thailand Latex\n2-inch Cenflex rebonded foam\n240 GSM\n12 mm quilting used", quantity: 1, unit: "Nos", price: 30000 }
-  ]
-};
 
 // GET /api/invoices
 export async function GET() {
@@ -54,15 +38,7 @@ export async function GET() {
     const jsonFiles = contents.filter(obj => obj.Key.endsWith('.json'));
 
     if (jsonFiles.length === 0) {
-      console.log('S3 bucket empty. Seeding initial sample invoice...');
-      const seedKey = 'invoices/seed-invoice-1.json';
-      await s3.send(new PutObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: seedKey,
-        Body: JSON.stringify(SAMPLE_INVOICE),
-        ContentType: 'application/json'
-      }));
-      return NextResponse.json([SAMPLE_INVOICE]);
+      return NextResponse.json([]);
     }
 
     // Fetch all files in parallel
