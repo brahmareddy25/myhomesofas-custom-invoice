@@ -162,6 +162,14 @@
   gap: 15px;
 }
 
+.company-gst {
+  font-size: 8pt;
+  color: #1e3a8a;
+  font-weight: 700;
+  margin-top: 2px;
+  text-align: center;
+}
+
 .header-title-box {
   width: 25%;
   text-align: right;

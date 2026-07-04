@@ -79,6 +79,9 @@ export default function InvoicePreview({ invoice, isPrintMode = false }) {
             <span>📞 {company.phone}</span>
             <span>✉️ {company.email}</span>
           </div>
+          <div className="company-gst">
+            GSTIN: 36ATMPC6443J2ZG
+          </div>
         </div>
         <div className="header-title-box">
           <h1 className="invoice-title">INVOICE</h1>
