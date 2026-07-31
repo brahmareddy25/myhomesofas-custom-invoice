@@ -54,7 +54,7 @@
     break-inside: avoid !important;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
   }
 
   /* Table styling for print */
@@ -101,7 +101,7 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   position: relative;
   color: #000000;
   font-family: 'Inter', sans-serif;
@@ -246,7 +246,7 @@
 
 /* Table layout styling */
 .invoice-table-container {
-  flex-grow: 1;
+  flex-grow: 0;
   margin-bottom: 10px;
 }
 
@@ -389,7 +389,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-top: auto;
+  margin-top: 25px;
   padding-top: 15px;
 }
 
