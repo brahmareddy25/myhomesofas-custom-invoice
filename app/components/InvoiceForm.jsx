@@ -126,7 +126,7 @@ export default function InvoiceForm({ invoice, onChange, onSave, onCancel }) {
         {/* Customer Info */}
         <div className="form-section">
           <h3 className="section-title">Customer Information</h3>
-          <div className="form-grid">
+          <div className="form-grid-3">
             <div className="form-group">
               <label htmlFor="customerName">Customer Name</label>
               <input
@@ -147,6 +147,17 @@ export default function InvoiceForm({ invoice, onChange, onSave, onCancel }) {
                 value={invoice.customerLocation || ''}
                 onChange={(e) => handleMetaChange('customerLocation', e.target.value)}
                 placeholder="Enter Customer Location"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="customerGst">Customer GSTIN (Optional)</label>
+              <input
+                id="customerGst"
+                type="text"
+                className="form-input"
+                value={invoice.customerGst || ''}
+                onChange={(e) => handleMetaChange('customerGst', e.target.value.toUpperCase())}
+                placeholder="Enter Customer GSTIN"
               />
             </div>
           </div>

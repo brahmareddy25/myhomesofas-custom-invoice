@@ -94,6 +94,9 @@ export default function InvoicePreview({ invoice, isPrintMode = false }) {
           <div className="section-label">Bill To</div>
           <h3 className="customer-name">{invoice.customerName || '—'}</h3>
           <p className="customer-location">{invoice.customerLocation || '—'}</p>
+          {invoice.customerGst && (
+            <p className="customer-gst">GSTIN: {invoice.customerGst}</p>
+          )}
         </div>
         <div className="meta-info-box">
           <div className="meta-row">
