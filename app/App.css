@@ -228,9 +228,20 @@ body {
   color: var(--text-dark);
 }
 
+.cust-phone {
+  font-size: 0.75rem;
+  color: #0d9488;
+  font-weight: 600;
+}
+
 .cust-loc {
   font-size: 0.75rem;
   color: var(--text-light);
+}
+
+.quotation-id-badge {
+  color: #0f766e !important;
+  background: #ccfbf1 !important;
 }
 
 .badge {
@@ -239,6 +250,16 @@ body {
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 600;
+}
+
+.badge-invoice {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.badge-quotation {
+  background: #ccfbf1;
+  color: #0f766e;
 }
 
 .badge-gst {
@@ -279,6 +300,15 @@ body {
 
 .btn-primary:hover {
   background: var(--primary-hover);
+}
+
+.btn-accent {
+  background: #0d9488;
+  color: white;
+}
+
+.btn-accent:hover {
+  background: #0f766e;
 }
 
 .btn-secondary {

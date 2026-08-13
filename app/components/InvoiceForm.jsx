@@ -24,6 +24,7 @@ const formatISOToDisplay = (isoStr) => {
 
 export default function InvoiceForm({ invoice, onChange, onSave, onCancel }) {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const isQuotation = invoice.docType === 'quotation' || (invoice.invoiceNo && invoice.invoiceNo.startsWith('QTN'));
 
   const handleMetaChange = (field, val) => {
     onChange({ ...invoice, [field]: val });
@@ -65,6 +66,38 @@ export default function InvoiceForm({ invoice, onChange, onSave, onCancel }) {
     onChange({ ...invoice, items: updatedItems });
   };
 
+  // Helper to compress and convert image file to Base64 Data URL
+  const handleImageUpload = (file, itemIdx) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 600;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        updateItem(itemIdx, 'image', dataUrl);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
   const items = invoice.items || [];
   const gstDetails = invoice.gstDetails || { cgst: 0, sgst: 0, igst: 0 };
 
@@ -73,27 +106,33 @@ export default function InvoiceForm({ invoice, onChange, onSave, onCancel }) {
       {/* Editor Headers */}
       <div className="form-header-bar">
         <div>
-          <h2 style={{ margin: 0, fontFamily: 'Outfit', fontWeight: 800 }}>Invoice Editor</h2>
+          <h2 style={{ margin: 0, fontFamily: 'Outfit', fontWeight: 800 }}>
+            {isQuotation ? 'Quotation Editor' : 'Invoice Editor'}
+          </h2>
           <p style={{ margin: '4px 0 0 0', color: 'var(--text-light)', fontSize: '0.85rem' }}>
-            Complete the fields below to update your invoice information.
+            {isQuotation
+              ? 'Complete the fields below to create or update your quotation information.'
+              : 'Complete the fields below to update your invoice information.'}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button className="btn btn-secondary" onClick={() => setShowPreviewModal(true)}>
-            👁️ View Invoice Preview
+            👁️ View {isQuotation ? 'Quotation' : 'Invoice'} Preview
           </button>
           <button className="btn btn-secondary" onClick={onCancel}>Cancel</button>
-          <button className="btn btn-primary" onClick={onSave}>Save Invoice</button>
+          <button className="btn btn-primary" onClick={onSave}>
+            Save {isQuotation ? 'Quotation' : 'Invoice'}
+          </button>
         </div>
       </div>
 
       <div className="editor-form-panel focused-form-panel">
-        {/* Invoice Details */}
+        {/* Document Details */}
         <div className="form-section">
-          <h3 className="section-title">Invoice Details</h3>
+          <h3 className="section-title">{isQuotation ? 'Quotation Details' : 'Invoice Details'}</h3>
           <div className="form-grid">
             <div className="form-group">
-              <label htmlFor="invoiceNo">Invoice Number</label>
+              <label htmlFor="invoiceNo">{isQuotation ? 'Quotation ID' : 'Invoice Number'}</label>
               <input
                 id="invoiceNo"
                 type="text"
@@ -108,7 +147,7 @@ export default function InvoiceForm({ invoice, onChange, onSave, onCancel }) {
               </span>
             </div>
             <div className="form-group">
-              <label htmlFor="invoiceDate">Invoice Date</label>
+              <label htmlFor="invoiceDate">{isQuotation ? 'Quotation Date' : 'Invoice Date'}</label>
               <input
                 id="invoiceDate"
                 type="date"
@@ -126,7 +165,7 @@ export default function InvoiceForm({ invoice, onChange, onSave, onCancel }) {
         {/* Customer Info */}
         <div className="form-section">
           <h3 className="section-title">Customer Information</h3>
-          <div className="form-grid-3">
+          <div className="form-grid">
             <div className="form-group">
               <label htmlFor="customerName">Customer Name</label>
               <input
@@ -139,6 +178,17 @@ export default function InvoiceForm({ invoice, onChange, onSave, onCancel }) {
               />
             </div>
             <div className="form-group">
+              <label htmlFor="customerPhone">Customer Phone Number</label>
+              <input
+                id="customerPhone"
+                type="tel"
+                className="form-input"
+                value={invoice.customerPhone || ''}
+                onChange={(e) => handleMetaChange('customerPhone', e.target.value)}
+                placeholder="Enter Customer Phone Number"
+              />
+            </div>
+            <div className="form-group">
               <label htmlFor="customerLocation">Location / Address</label>
               <input
                 id="customerLocation"
@@ -146,7 +196,7 @@ export default function InvoiceForm({ invoice, onChange, onSave, onCancel }) {
                 className="form-input"
                 value={invoice.customerLocation || ''}
                 onChange={(e) => handleMetaChange('customerLocation', e.target.value)}
-                placeholder="Enter Customer Location"
+                placeholder="Enter Customer Location / Address"
               />
             </div>
             <div className="form-group">
@@ -247,30 +297,32 @@ export default function InvoiceForm({ invoice, onChange, onSave, onCancel }) {
           )}
         </div>
 
-        {/* Items Section */}
+        {/* Items / Products Section */}
         <div className="form-section">
           <div className="section-title">
-            <span>Items Details</span>
-            <button className="btn btn-secondary btn-sm" onClick={addItem}>+ Add Item</button>
+            <span>{isQuotation ? 'Products / Quotation Items' : 'Items Details'}</span>
+            <button className="btn btn-secondary btn-sm" onClick={addItem}>
+              {isQuotation ? '+ Add Product' : '+ Add Item'}
+            </button>
           </div>
 
           <div className="items-builder">
             {items.map((item, idx) => (
               <div key={idx} className="item-row-card">
                 <div className="item-row-header">
-                  <span>Item #{idx + 1}</span>
+                  <span>{isQuotation ? `Product #${idx + 1}` : `Item #${idx + 1}`}</span>
                   <button className="btn-remove-item" onClick={() => removeItem(idx)}>Remove</button>
                 </div>
                 
                 <div className="form-grid">
                   <div className="form-group">
-                    <label>Item Name</label>
+                    <label>{isQuotation ? 'Product Name' : 'Item Name'}</label>
                     <input
                       type="text"
                       className="form-input"
                       value={item.name || ''}
                       onChange={(e) => updateItem(idx, 'name', e.target.value)}
-                      placeholder="Enter Item Name"
+                      placeholder={isQuotation ? "Enter Product Name" : "Enter Item Name"}
                     />
                   </div>
                   <div className="form-group">
@@ -280,7 +332,7 @@ export default function InvoiceForm({ invoice, onChange, onSave, onCancel }) {
                       className="form-input"
                       value={item.unit || ''}
                       onChange={(e) => updateItem(idx, 'unit', e.target.value)}
-                      placeholder="Enter Unit"
+                      placeholder="Enter Unit (e.g. Nos, Set)"
                     />
                   </div>
                 </div>
@@ -298,14 +350,14 @@ export default function InvoiceForm({ invoice, onChange, onSave, onCancel }) {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Unit Price (₹)</label>
+                    <label>{isQuotation ? 'Quotation Amount (₹)' : 'Unit Price (₹)'}</label>
                     <input
                       type="number"
                       min="0"
                       className="form-input"
                       value={item.price || 0}
                       onChange={(e) => updateItem(idx, 'price', parseFloat(e.target.value) || 0)}
-                      placeholder="Enter Price"
+                      placeholder={isQuotation ? "Enter Quotation Amount" : "Enter Price"}
                     />
                   </div>
                   <div className="form-group">
@@ -321,41 +373,99 @@ export default function InvoiceForm({ invoice, onChange, onSave, onCancel }) {
                 </div>
 
                 <div className="form-group">
-                  <label>Description / Details</label>
+                  <label>{isQuotation ? 'Product Description / Details' : 'Description / Details'}</label>
                   <textarea
                     className="form-input"
                     value={item.description || ''}
                     onChange={(e) => updateItem(idx, 'description', e.target.value)}
-                    placeholder="Enter Item Details / Warranty / Dimensions"
+                    placeholder={isQuotation ? "Enter Product Description / Specifications / Warranty" : "Enter Item Details / Warranty / Dimensions"}
                   ></textarea>
                 </div>
+
+                {isQuotation && (
+                  <div className="form-group" style={{ marginTop: '0.25rem' }}>
+                    <label>Product Photo (Camera / Upload)</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                      {item.image ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#ffffff', padding: '6px 10px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                          <img 
+                            src={item.image} 
+                            alt="Product Preview" 
+                            style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #cbd5e1' }} 
+                          />
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', margin: 0 }}>
+                              📷 Change Photo
+                              <input 
+                                type="file" 
+                                accept="image/*" 
+                                capture="environment"
+                                style={{ display: 'none' }} 
+                                onChange={(e) => {
+                                  if (e.target.files?.[0]) handleImageUpload(e.target.files[0], idx);
+                                }} 
+                              />
+                            </label>
+                            <button 
+                              type="button" 
+                              className="btn btn-danger btn-sm" 
+                              onClick={() => updateItem(idx, 'image', null)}
+                            >
+                              🗑️ Remove
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+                          📷 Take Photo / Upload Image
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            capture="environment"
+                            style={{ display: 'none' }} 
+                            onChange={(e) => {
+                              if (e.target.files?.[0]) handleImageUpload(e.target.files[0], idx);
+                            }} 
+                          />
+                        </label>
+                      )}
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-light)' }}>
+                        Take a picture with your camera or select an image from your device.
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
 
             {items.length === 0 && (
               <div className="empty-state">
-                <span>No items added yet. Click "+ Add Item" above to add products.</span>
+                <span>No items added yet. Click &quot;{isQuotation ? '+ Add Product' : '+ Add Item'}&quot; above to add products.</span>
               </div>
             )}
           </div>
         </div>
 
         {/* Bottom Actions Bar */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1.5rem', flexWrap: 'wrap' }}>
           <button className="btn btn-secondary" onClick={() => setShowPreviewModal(true)}>
-            👁️ View Invoice Preview
+            👁️ View {isQuotation ? 'Quotation' : 'Invoice'} Preview
           </button>
           <button className="btn btn-secondary" onClick={onCancel}>Cancel</button>
-          <button className="btn btn-primary" onClick={onSave}>Save Invoice</button>
+          <button className="btn btn-primary" onClick={onSave}>
+            Save {isQuotation ? 'Quotation' : 'Invoice'}
+          </button>
         </div>
       </div>
 
-      {/* Invoice Preview Modal Dialog */}
+      {/* Preview Modal Dialog */}
       {showPreviewModal && (
         <div className="modal-overlay no-print" onClick={() => setShowPreviewModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 style={{ margin: 0, fontFamily: 'Outfit', fontWeight: 800 }}>Invoice PDF Layout Preview</h3>
+              <h3 style={{ margin: 0, fontFamily: 'Outfit', fontWeight: 800 }}>
+                {isQuotation ? 'Quotation PDF Layout Preview' : 'Invoice PDF Layout Preview'}
+              </h3>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <button className="btn btn-primary btn-sm" onClick={() => {
                   setShowPreviewModal(false);

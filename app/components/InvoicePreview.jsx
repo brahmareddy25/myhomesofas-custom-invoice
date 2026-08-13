@@ -64,6 +64,7 @@ export default function InvoicePreview({ invoice, isPrintMode = false }) {
   }, [payment.upiId, grandTotal, company.name]);
 
   const amountInWordsStr = numberToIndianWords(grandTotal);
+  const isQuotation = invoice.docType === 'quotation' || (invoice.invoiceNo && invoice.invoiceNo.startsWith('QTN'));
 
   return (
     <div className={isPrintMode ? "print-page" : "screen-page"}>
@@ -84,15 +85,18 @@ export default function InvoicePreview({ invoice, isPrintMode = false }) {
           </div>
         </div>
         <div className="header-title-box">
-          <h1 className="invoice-title">INVOICE</h1>
+          <h1 className="invoice-title">{isQuotation ? 'QUOTATION' : 'INVOICE'}</h1>
         </div>
       </div>
 
-      {/* 2. Metadata Section (Bill To & Invoice Details) */}
+      {/* 2. Metadata Section (Bill To / Quotation For & Document Details) */}
       <div className="invoice-meta-section">
         <div className="bill-to-box">
-          <div className="section-label">Bill To</div>
+          <div className="section-label">{isQuotation ? 'Quotation For' : 'Bill To'}</div>
           <h3 className="customer-name">{invoice.customerName || '—'}</h3>
+          {invoice.customerPhone && (
+            <p className="customer-phone">📞 {invoice.customerPhone}</p>
+          )}
           <p className="customer-location">{invoice.customerLocation || '—'}</p>
           {invoice.customerGst && (
             <p className="customer-gst">GSTIN: {invoice.customerGst}</p>
@@ -100,11 +104,11 @@ export default function InvoicePreview({ invoice, isPrintMode = false }) {
         </div>
         <div className="meta-info-box">
           <div className="meta-row">
-            <span className="meta-label">Invoice#:</span>
+            <span className="meta-label">{isQuotation ? 'Quotation#:' : 'Invoice#:'}</span>
             <span className="meta-val">{invoice.invoiceNo || '—'}</span>
           </div>
           <div className="meta-row">
-            <span className="meta-label">Invoice Date:</span>
+            <span className="meta-label">{isQuotation ? 'Quotation Date:' : 'Invoice Date:'}</span>
             <span className="meta-val">{invoice.invoiceDate || '—'}</span>
           </div>
           {hasTransporter && vehicleNo && (
@@ -124,7 +128,7 @@ export default function InvoicePreview({ invoice, isPrintMode = false }) {
               <th className="col-num">#</th>
               <th className="col-desc">Description</th>
               <th className="col-qty">Qty</th>
-              <th className="col-price">Price</th>
+              <th className="col-price">{isQuotation ? 'Quotation Amount' : 'Price'}</th>
               <th className="col-total">Total</th>
             </tr>
           </thead>
@@ -135,8 +139,19 @@ export default function InvoicePreview({ invoice, isPrintMode = false }) {
                 <tr key={idx}>
                   <td className="col-num">{idx + 1}</td>
                   <td className="col-desc">
-                    <p className="item-name">{item.name}</p>
-                    {item.description && <p className="item-desc">{item.description}</p>}
+                    <div className="item-desc-wrapper">
+                      {item.image && (
+                        <img 
+                          src={item.image} 
+                          alt={item.name || 'Product'} 
+                          className="item-product-img" 
+                        />
+                      )}
+                      <div className="item-text-content">
+                        <p className="item-name">{item.name}</p>
+                        {item.description && <p className="item-desc">{item.description}</p>}
+                      </div>
+                    </div>
                   </td>
                   <td className="col-qty">
                     <span className="qty-val">{item.quantity}</span>
@@ -192,7 +207,7 @@ export default function InvoicePreview({ invoice, isPrintMode = false }) {
             </>
           )}
           <div className="grand-total-row">
-            <span className="grand-label">Grand Total</span>
+            <span className="grand-label">{isQuotation ? 'Total Amount' : 'Grand Total'}</span>
             <span className="grand-val">{formatCurrency(grandTotal)}</span>
           </div>
         </div>

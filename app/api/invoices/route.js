@@ -59,8 +59,13 @@ export async function GET() {
     const results = await Promise.all(invoicePromises);
     const invoices = results.filter(inv => inv !== null);
 
-    // Sort descending by invoiceNo sequence (e.g. INV-3, INV-2)
+    // Sort descending by timestamp or document sequence
     invoices.sort((a, b) => {
+      const timeA = parseInt((a.id || '').replace(/\D/g, ''), 10) || 0;
+      const timeB = parseInt((b.id || '').replace(/\D/g, ''), 10) || 0;
+      if (timeA && timeB && timeA !== timeB) {
+        return timeB - timeA;
+      }
       const numA = parseInt((a.invoiceNo || '').replace(/\D/g, ''), 10) || 0;
       const numB = parseInt((b.invoiceNo || '').replace(/\D/g, ''), 10) || 0;
       return numB - numA;

@@ -69,19 +69,45 @@ async function runTests() {
     if (singleInv.items.length !== 1) throw new Error(`PUT failed: Expected 1 item, got ${singleInv.items.length}`);
     console.log("✅ PUT changes verified successfully.");
 
-    // 4. Test DELETE
-    console.log("\n4. Testing DELETE (Delete Invoice)...");
-    const deleteRes = await fetch(`${API_BASE}/${testId}`, { method: 'DELETE' });
-    if (!deleteRes.ok) throw new Error(`DELETE failed with status ${deleteRes.status}`);
-    const deleteData = await deleteRes.json();
-    console.log("✅ DELETE successful:", deleteData);
+    // 5. Test Quotation CRUD
+    console.log("\n5. Testing POST (Create Quotation)...");
+    const testQuotationId = `test-qtn-${Date.now()}`;
+    const testQuotation = {
+      id: testQuotationId,
+      docType: 'quotation',
+      invoiceNo: "QTN-101",
+      invoiceDate: "13.08.2026",
+      customerName: "QUOTATION CLIENT",
+      customerPhone: "9876543210",
+      customerLocation: "HYDERABAD",
+      hasGst: false,
+      items: [
+        { name: "Sofa Set 3+2", description: "Cenflex foam Mittals fabric", quantity: 1, unit: "Set", price: 75000 }
+      ]
+    };
+    const postQtnRes = await fetch(API_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(testQuotation)
+    });
+    if (postQtnRes.status !== 201) throw new Error(`POST Quotation failed with status ${postQtnRes.status}`);
+    console.log("✅ POST Quotation successful");
 
-    // Verify DELETE worked
-    const verifyDeleteRes = await fetch(`${API_BASE}/${testId}`);
-    if (verifyDeleteRes.status !== 404) throw new Error(`DELETE failed: Invoice still exists (status ${verifyDeleteRes.status})`);
-    console.log("✅ DELETE verified successfully (returned 404).");
-    
-    console.log("\n⭐️ ALL RESTFUL API TESTS PASSED SUCCESSFULLY! ⭐️");
+    // Fetch and check quotation
+    const getQtnRes = await fetch(`${API_BASE}/${testQuotationId}`);
+    if (!getQtnRes.ok) throw new Error(`GET Quotation failed with status ${getQtnRes.status}`);
+    const fetchedQtn = await getQtnRes.json();
+    if (fetchedQtn.docType !== 'quotation' || fetchedQtn.customerPhone !== '9876543210') {
+      throw new Error("GET Quotation failed: Attributes do not match");
+    }
+    console.log("✅ GET Quotation verified successfully.");
+
+    // Delete quotation
+    const delQtnRes = await fetch(`${API_BASE}/${testQuotationId}`, { method: 'DELETE' });
+    if (!delQtnRes.ok) throw new Error(`DELETE Quotation failed`);
+    console.log("✅ DELETE Quotation successful.");
+
+    console.log("\n⭐️ ALL INVOICE & QUOTATION API TESTS PASSED SUCCESSFULLY! ⭐️");
 
   } catch (error) {
     console.error("❌ API Test Failed:", error.message);

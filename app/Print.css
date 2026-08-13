@@ -219,6 +219,13 @@
   text-transform: uppercase;
 }
 
+.customer-phone {
+  font-size: 9pt;
+  color: #334155;
+  margin: 0 0 2px 0;
+  font-weight: 600;
+}
+
 .customer-location {
   font-size: 9.5pt;
   color: #1f2937;
@@ -286,6 +293,26 @@
 .col-qty { width: 12%; text-align: center; }
 .col-price { width: 14%; text-align: right; }
 .col-total { width: 14%; text-align: right; }
+
+.item-desc-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.item-product-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  flex-shrink: 0;
+}
+
+.item-text-content {
+  flex: 1;
+}
 
 .item-name {
   font-weight: 700;

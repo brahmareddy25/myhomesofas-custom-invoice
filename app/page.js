@@ -39,28 +39,33 @@ export default function Home() {
     return `${dd}.${mm}.${yyyy}`;
   };
 
-  // Helper to generate the next invoice number automatically
-  const generateNextInvoiceNo = (list) => {
+  // Helper to generate the next invoice / quotation number automatically
+  const generateNextDocNo = (list, docType = 'invoice') => {
     let maxNum = 0;
+    const prefix = docType === 'quotation' ? 'QTN' : 'INV';
+    const regex = new RegExp(`^${prefix}-(\\d+)$`, 'i');
     list.forEach(inv => {
-      const match = (inv.invoiceNo || '').match(/^INV-(\d+)$/i);
+      const match = (inv.invoiceNo || '').match(regex);
       if (match) {
         const num = parseInt(match[1], 10);
         if (num > maxNum) maxNum = num;
       }
     });
-    return `INV-${maxNum + 1}`;
+    return `${prefix}-${maxNum + 1}`;
   };
 
   // Trigger New Invoice Screen
   const handleNewInvoice = () => {
-    const nextInvoiceNo = generateNextInvoiceNo(invoices);
+    const nextInvoiceNo = generateNextDocNo(invoices, 'invoice');
     const newInv = {
       id: `inv-${Date.now()}`,
+      docType: 'invoice',
       invoiceNo: nextInvoiceNo,
       invoiceDate: getFormattedDate(),
       customerName: '',
+      customerPhone: '',
       customerLocation: '',
+      customerGst: '',
       hasGst: false,
       gstDetails: { cgst: 9, sgst: 9, igst: 0 },
       hasTransporter: false,
@@ -71,19 +76,43 @@ export default function Home() {
     setCurrentView('editor');
   };
 
-  // Trigger Edit Invoice
+  // Trigger New Quotation Screen
+  const handleNewQuotation = () => {
+    const nextQuotationNo = generateNextDocNo(invoices, 'quotation');
+    const newQuotation = {
+      id: `qtn-${Date.now()}`,
+      docType: 'quotation',
+      invoiceNo: nextQuotationNo,
+      invoiceDate: getFormattedDate(),
+      customerName: '',
+      customerPhone: '',
+      customerLocation: '',
+      customerGst: '',
+      hasGst: false,
+      gstDetails: { cgst: 9, sgst: 9, igst: 0 },
+      hasTransporter: false,
+      vehicleNo: '',
+      items: []
+    };
+    setEditingInvoice(newQuotation);
+    setCurrentView('editor');
+  };
+
+  // Trigger Edit Invoice / Quotation
   const handleEditInvoice = (inv) => {
     setEditingInvoice({ ...inv });
     setCurrentView('editor');
   };
 
-  // Trigger Duplicate Invoice
+  // Trigger Duplicate Invoice / Quotation
   const handleDuplicateInvoice = (inv) => {
-    const nextInvoiceNo = generateNextInvoiceNo(invoices);
+    const docType = inv.docType === 'quotation' || (inv.invoiceNo && inv.invoiceNo.startsWith('QTN')) ? 'quotation' : 'invoice';
+    const nextDocNo = generateNextDocNo(invoices, docType);
     const duplicated = {
       ...inv,
-      id: `inv-${Date.now()}`,
-      invoiceNo: nextInvoiceNo,
+      id: `${docType === 'quotation' ? 'qtn' : 'inv'}-${Date.now()}`,
+      docType: docType,
+      invoiceNo: nextDocNo,
       invoiceDate: getFormattedDate(),
       // Remove any item database primary keys so they get inserted as fresh rows
       items: (inv.items || []).map(item => ({
@@ -91,31 +120,33 @@ export default function Home() {
         description: item.description,
         quantity: item.quantity,
         unit: item.unit,
-        price: item.price
+        price: item.price,
+        image: item.image || null
       }))
     };
     setEditingInvoice(duplicated);
     setCurrentView('editor');
   };
 
-  // Trigger Delete Invoice
+  // Trigger Delete Invoice / Quotation
   const handleDeleteInvoice = async (id) => {
     try {
       const response = await fetch(`${API_BASE_URL}/${id}`, {
         method: 'DELETE'
       });
-      if (!response.ok) throw new Error('Failed to delete invoice');
+      if (!response.ok) throw new Error('Failed to delete document');
       fetchInvoices();
     } catch (err) {
       console.error(err);
-      alert('Error deleting invoice from database.');
+      alert('Error deleting document from database.');
     }
   };
 
   // Handle Save (Add or Update in database)
   const handleSaveInvoice = async () => {
+    const isQuotation = editingInvoice?.docType === 'quotation' || (editingInvoice?.invoiceNo && editingInvoice?.invoiceNo.startsWith('QTN'));
     if (!editingInvoice.invoiceNo || !editingInvoice.customerName) {
-      alert("Please provide an Invoice Number and Customer Name.");
+      alert(`Please provide ${isQuotation ? 'a Quotation ID' : 'an Invoice Number'} and Customer Name.`);
       return;
     }
 
@@ -132,14 +163,14 @@ export default function Home() {
         body: JSON.stringify(editingInvoice)
       });
 
-      if (!response.ok) throw new Error('Failed to save invoice');
+      if (!response.ok) throw new Error('Failed to save document');
       
       await fetchInvoices();
       setCurrentView('dashboard');
       setEditingInvoice(null);
     } catch (err) {
       console.error(err);
-      alert('Error saving invoice to S3 database.');
+      alert('Error saving document to S3 database.');
     }
   };
 
@@ -169,18 +200,23 @@ export default function Home() {
             <img src="/logo.png" alt="MY HOME SOFAS Logo" />
             <div>
               <h1>MY HOME SOFAS</h1>
-              <span>Customized & Idealized</span>
+              <span>Customized &amp; Idealized</span>
             </div>
           </div>
           <div className="header-actions">
             {currentView === 'editor' && (
               <>
                 <button className="btn btn-secondary" onClick={handleCancelEdit}>Back to Dashboard</button>
-                <button className="btn btn-primary" onClick={handleSaveInvoice}>Save Invoice</button>
+                <button className="btn btn-primary" onClick={handleSaveInvoice}>
+                  Save {editingInvoice?.docType === 'quotation' ? 'Quotation' : 'Invoice'}
+                </button>
               </>
             )}
             {currentView === 'dashboard' && (
-              <button className="btn btn-primary" onClick={handleNewInvoice}>+ Create Invoice</button>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <button className="btn btn-primary" onClick={handleNewInvoice}>+ Create Invoice</button>
+                <button className="btn btn-accent" onClick={handleNewQuotation}>+ Create Quotation</button>
+              </div>
             )}
           </div>
         </header>
@@ -196,6 +232,7 @@ export default function Home() {
             onDuplicate={handleDuplicateInvoice}
             onDelete={handleDeleteInvoice}
             onNewInvoice={handleNewInvoice}
+            onNewQuotation={handleNewQuotation}
           />
         </main>
       )}
